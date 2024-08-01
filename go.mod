@@ -1,8 +1,9 @@
-module github.com/hacdias/webdav/v4
+module github.com/hacdias/webdav/v5
 
 go 1.22
 
 require (
+	github.com/go-viper/mapstructure/v2 v2.0.0
 	github.com/rs/cors v1.11.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -36,5 +37,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-retract v4.1.0
