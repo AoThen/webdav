@@ -183,11 +183,46 @@ users:
 	})
 }
 
+func TestServerAuthenticationNoPassword(t *testing.T) {
+	t.Parallel()
+
+	dir := makeTestDirectory(t, map[string][]byte{
+		"foo.txt":     []byte("foo"),
+		"sub/bar.txt": []byte("bar"),
+	})
+
+	srv := makeTestServer(t, fmt.Sprintf(`
+directory: %s
+noPassword: true
+permissions: CRUD
+
+users:
+  - username: basic
+`, dir))
+
+	t.Run("Basic Auth", func(t *testing.T) {
+		t.Parallel()
+
+		client := gowebdav.NewClient(srv.URL, "basic", "")
+		files, err := client.ReadDir("/")
+		require.NoError(t, err)
+		require.Len(t, files, 2)
+	})
+
+	t.Run("Unauthorized Wrong User", func(t *testing.T) {
+		t.Parallel()
+		client := gowebdav.NewClient(srv.URL, "wrong", "")
+		_, err := client.ReadDir("/")
+		require.ErrorContains(t, err, "401")
+	})
+}
+
 func TestServerRules(t *testing.T) {
 	t.Parallel()
 
 	dir := makeTestDirectory(t, map[string][]byte{
 		"foo.txt":   []byte("foo"),
+		"bar.js":    []byte("foo js"),
 		"a/foo.js":  []byte("foo js"),
 		"a/foo.txt": []byte("foo txt"),
 		"b/foo.txt": []byte("foo b"),
@@ -206,11 +241,11 @@ users:
     rules:
     - regex: "^.+.js$"
       permissions: R
-    - path: "/b"
+    - path: "/b/"
       permissions: R
     - path: "/a/foo.txt"
       permissions: none
-    - path: "/c"
+    - path: "/c/"
       permissions: none
 `, dir))
 
@@ -218,13 +253,25 @@ users:
 
 	files, err := client.ReadDir("/")
 	require.NoError(t, err)
-	require.Len(t, files, 4)
+	require.Len(t, files, 5)
 
 	err = client.Write("/foo.txt", []byte("new"), 0666)
 	require.NoError(t, err)
 
 	err = client.Write("/new.txt", []byte("new"), 0666)
 	require.NoError(t, err)
+
+	err = client.Copy("/bar.js", "/b/bar.js", false)
+	require.ErrorContains(t, err, "403")
+
+	err = client.Copy("/bar.js", "/bar.jsx", false)
+	require.NoError(t, err)
+
+	err = client.Copy("/b/foo.txt", "/foo1.txt", false)
+	require.NoError(t, err)
+
+	err = client.Rename("/b/foo.txt", "/foo2.txt", false)
+	require.ErrorContains(t, err, "403")
 
 	_, err = client.Read("/a/foo.txt")
 	require.ErrorContains(t, err, "403")
