@@ -35,7 +35,10 @@ jobs:
       working-directory: .
       # env:
       #   CGO_ENABLED: 0
-      run: GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-w -s" -v
+      run: |
+          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-w -s" -v
+          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-w -s" -v
+          tree .
 
       
     # - name: Build
@@ -49,4 +52,6 @@ jobs:
       uses: actions/upload-artifact@main
       with:
         name: webdav.zip
-        path: webdav
+        path: |
+            webdav
+            webdav.exe
