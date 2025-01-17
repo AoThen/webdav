@@ -1,4 +1,4 @@
-name: Build Go linux_amd64
+name: Build Go linux_amd64 and Win64
 
 on:
     workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@main
       with:
-        name: webdav.zip
+        name: webdav
         path: |
             webdav
             webdav.exe
