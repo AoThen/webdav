@@ -14,7 +14,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@main
       with:
-        go-version: '1.24'
+        go-version: '1.25'
 
     # - name: Print Go version and environment
     #   id: vars
@@ -55,3 +55,4 @@ jobs:
         path: |
             webdav
             webdav.exe
+
